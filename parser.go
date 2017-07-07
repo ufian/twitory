@@ -1,0 +1,111 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/gocarina/gocsv"
+)
+
+/*
+0 tweet_id
+1 in_reply_to_status_id
+2 in_reply_to_user_id
+3 timestamp
+4 source
+5 text
+6 retweeted_status_id
+7 retweeted_status_user_id
+8 retweeted_status_timestamp
+9 expanded_urls
+*/
+
+type DateTime struct {
+	time.Time
+}
+
+const DateFormat = "2006-01-02 15:04:05 -0700"
+
+// Convert the internal date as CSV string
+func (date *DateTime) MarshalCSV() (string, error) {
+	return date.Time.Format(DateFormat), nil
+}
+
+// Convert the CSV string as internal date
+func (date *DateTime) UnmarshalCSV(csv string) (err error) {
+	date.Time, err = time.Parse(DateFormat, csv)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (date DateTime) MarshalJSON() ([]byte, error) {
+	s, _ := date.MarshalCSV()
+	return json.Marshal(s)
+}
+
+func (date DateTime) isTimeDay(ts time.Time) bool {
+	return date.Time.Day() == ts.Day() && date.Time.Month() == ts.Month()
+}
+
+func (date DateTime) isDay(dt DateTime) bool {
+	return date.isTimeDay(dt.Time)
+}
+
+/*func (date DateTime) isDay(ts DateTime) bool {
+	return date.isDay(ts.Time)
+}*/
+
+type Tweet struct {
+	Id        string   `csv:"tweet_id",json:"tweet_id"`
+	Text      string   `csv:"text",json:"text"`
+	Timestamp DateTime `csv:"timestamp",json:"timestamp"`
+	Source    string   `csv:"source",json:"source"`
+}
+
+func check(e error) {
+	if e != nil {
+		log.Fatal(e)
+		panic(e)
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	defer tweetsFile.Close()
+
+	tweets := []*Tweet{}
+
+	if err := gocsv.UnmarshalFile(tweetsFile, &tweets); err != nil {
+		check(err)
+	}
+
+	tsNow := DateTime{time.Now()}
+
+	fmt.Println(tsNow.MarshalJSON())
+
+	enc := json.NewEncoder(w)
+	result := []*Tweet{}
+	for _, tweet := range tweets {
+		if tsNow.isDay(tweet.Timestamp) {
+			result = append(result, tweet)
+		}
+
+	}
+
+	enc.Encode(result)
+
+}
+
+func main() {
+	http.HandleFunc("/tweets", handler)
+	http.ListenAndServe(":8080", nil)
+}
