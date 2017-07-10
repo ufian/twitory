@@ -75,14 +75,19 @@ func check(e error) {
 	}
 }
 
-func channelReader(tweets chan *Tweet) {
+func channelReader() chan *Tweet {
 	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 	defer tweetsFile.Close()
+	tweets := make(chan *Tweet)
+	go func() {
+		gocsv.UnmarshalToChan(tweetsFile, tweets)
+		close(tweets)
+	}()
 
-	gocsv.UnmarshalToChan(tweetsFile, tweets)
+	return tweets
 }
 
 func simpleReader() []*Tweet {
@@ -110,8 +115,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	result := []*Tweet{}
 
-	tweets := make(chan *Tweet)
-	go channelReader(tweets)
+	tweets := channelReader()
 	for tweet := range tweets {
 		if tsNow.isDay(tweet.Timestamp) {
 			result = append(result, tweet)
@@ -138,8 +142,7 @@ func main() {
 	if os.Args[1] == "server" {
 		server()
 	} else if os.Args[1] == "channel" {
-		tweets := make(chan *Tweet)
-		channelReader(tweets)
+		tweets := channelReader()
 		fmt.Println("Read from channel", tweets)
 		for _ = range tweets {
 			i++
