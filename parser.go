@@ -62,10 +62,10 @@ func (date DateTime) isDay(dt DateTime) bool {
 }*/
 
 type Tweet struct {
-	Id        string   `csv:"tweet_id",json:"tweet_id"`
-	Text      string   `csv:"text",json:"text"`
-	Timestamp DateTime `csv:"timestamp",json:"timestamp"`
-	Source    string   `csv:"source",json:"source"`
+	ID        string   `csv:"tweet_id" json:"tweet_id"`
+	Text      string   `csv:"text" json:"text"`
+	Timestamp DateTime `csv:"timestamp" json:"timestamp"`
+	Source    string   `csv:"source" json:"source"`
 }
 
 func check(e error) {
@@ -75,7 +75,17 @@ func check(e error) {
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func channelReader(tweets chan *Tweet) {
+	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	defer tweetsFile.Close()
+
+	gocsv.UnmarshalToChan(tweetsFile, tweets)
+}
+
+func simpleReader() []*Tweet {
 	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		panic(err)
@@ -88,13 +98,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		check(err)
 	}
 
+	return tweets
+
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
 	tsNow := DateTime{time.Now()}
 
 	fmt.Println(tsNow.MarshalJSON())
 
 	enc := json.NewEncoder(w)
 	result := []*Tweet{}
-	for _, tweet := range tweets {
+
+	tweets := make(chan *Tweet)
+	go channelReader(tweets)
+	for tweet := range tweets {
 		if tsNow.isDay(tweet.Timestamp) {
 			result = append(result, tweet)
 		}
@@ -105,7 +123,32 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func main() {
+func server() {
 	http.HandleFunc("/tweets", handler)
 	http.ListenAndServe(":8080", nil)
+}
+
+func main() {
+	if len(os.Args) == 1 {
+		server()
+		os.Exit(0)
+	}
+	i := 0
+
+	if os.Args[1] == "server" {
+		server()
+	} else if os.Args[1] == "channel" {
+		tweets := make(chan *Tweet)
+		channelReader(tweets)
+		fmt.Println("Read from channel", tweets)
+		for _ = range tweets {
+			i++
+		}
+	} else if os.Args[1] == "simple" {
+		for _ = range simpleReader() {
+			i++
+		}
+	}
+
+	fmt.Println("Read ", i, " rows")
 }
