@@ -76,15 +76,18 @@ func check(e error) {
 }
 
 func channelReader() chan *Tweet {
-	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defer tweetsFile.Close()
 	tweets := make(chan *Tweet)
+
 	go func() {
-		gocsv.UnmarshalToChan(tweetsFile, tweets)
-		close(tweets)
+		tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+		defer tweetsFile.Close()
+
+		if err := gocsv.UnmarshalToChan(tweetsFile, tweets); err != nil {
+			log.Printf("Error unmarshaling engine data: %v\n", err)
+		}
 	}()
 
 	return tweets
