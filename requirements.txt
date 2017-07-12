@@ -1,0 +1,4 @@
+Flask==0.12.2
+Flask-OAuth==0.12
+PyYAML==3.12
+requests==2.18.1

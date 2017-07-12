@@ -1,0 +1,5 @@
+twitter:
+  consumer_key:
+  customer_private:
+flask:
+  private: MyPrivateKey
