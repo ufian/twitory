@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Twitory</title>
+</head>
+<body>
+
+{% if user %}
+    <a href="{{ url_for('logout') }}">Logout {{ user }}</a>
+{% else %}
+    <a href="{{ url_for('login') }}">Login by twitter</a>
+{% endif %}
+<br/><br/>
+{% if tweets %}
+    {% for row in tweets %}
+        <blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/{{ user }}/status/{{ row['tweet_id'] }}">__</a></blockquote>
+    {% endfor %}
+
+    <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+{% endif %}
+
+</body>
+</html>

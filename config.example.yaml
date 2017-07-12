@@ -1,5 +1,5 @@
 twitter:
   consumer_key:
-  customer_private:
+  consumer_secret:
 flask:
   private: MyPrivateKey

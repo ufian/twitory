@@ -2,7 +2,7 @@
 
 __author__ = 'ufian'
 
-from flask import Flask, redirect, request, url_for, flash, session
+from flask import Flask, redirect, request, url_for, flash, session, render_template
 import requests
 import json
 import yaml
@@ -25,13 +25,13 @@ def link(endpoint, title):
 
 @app.route('/')
 def index():
-    res = requests.get('http://localhost:8080/tweets')
+    data = dict()
+    
     if session.get('twitter_user') and session.get('twitter_token'):
-        l = link('logout', session['twitter_user'])
+        data['user'] = session.get('twitter_user')
+        res = requests.get('http://localhost:8080/tweets', params={'user': data['user']})
+        data['tweets'] = res.json()
     else:
-        l = link('login', 'Login')
-    print res.json()
-    return l + \
-           u"<br>\n" + \
-        u"\n".join(TEMPLATE.format(id=row['tweet_id']) for row in res.json()) + u'\n' + SCRIPT
+        data['user'] = None
 
+    return render_template('index.html', **data)
