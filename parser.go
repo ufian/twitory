@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"errors"
 	"github.com/gocarina/gocsv"
 )
 
@@ -75,11 +76,32 @@ func check(e error) {
 	}
 }
 
-func channelReader() chan *Tweet {
+func getFileName(user string) (string, error) {
+	fpath := "%s.csv"
+
+	fmt.Printf("Read for \"%s\"", user)
+	if len(user) == 0 {
+		return fmt.Sprintf(fpath, "tweets"), nil
+	}
+
+	path := fmt.Sprintf(fpath, user)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return "", errors.New("Not found tweets file")
+	}
+
+	return path, nil
+}
+
+func channelReader(user string) (chan *Tweet, error) {
 	tweets := make(chan *Tweet)
+	path, err := getFileName(user)
+	if err != nil {
+		return nil, err
+	}
 
 	go func() {
-		tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
+		tweetsFile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
@@ -90,13 +112,18 @@ func channelReader() chan *Tweet {
 		}
 	}()
 
-	return tweets
+	return tweets, nil
 }
 
-func simpleReader() []*Tweet {
-	tweetsFile, err := os.OpenFile("tweets.csv", os.O_RDONLY, os.ModePerm)
+func simpleReader(user string) ([]*Tweet, error) {
+	path, err := getFileName(user)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+
+	tweetsFile, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return nil, err
 	}
 	defer tweetsFile.Close()
 
@@ -106,19 +133,23 @@ func simpleReader() []*Tweet {
 		check(err)
 	}
 
-	return tweets
+	return tweets, nil
 
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	tsNow := DateTime{time.Now()}
 
-	fmt.Println(tsNow.MarshalJSON())
-
 	enc := json.NewEncoder(w)
 	result := []*Tweet{}
 
-	tweets := channelReader()
+	user := r.URL.Query().Get("user")
+
+	tweets, err := channelReader(user)
+	if err != nil {
+		enc.Encode(map[string]interface{}{"status": "error", "error": err.Error()})
+		return
+	}
 	for tweet := range tweets {
 		if tsNow.isDay(tweet.Timestamp) {
 			result = append(result, tweet)
@@ -126,8 +157,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	enc.Encode(result)
-
+	enc.Encode(map[string]interface{}{"status": "ok", "tweets": result})
 }
 
 func server() {
@@ -144,14 +174,24 @@ func main() {
 
 	if os.Args[1] == "server" {
 		server()
-	} else if os.Args[1] == "channel" {
-		tweets := channelReader()
+		os.Exit(0)
+	}
+	user := ""
+	if len(os.Args) >= 3 {
+		user = os.Args[2]
+	}
+
+	if os.Args[1] == "channel" {
+		tweets, err := channelReader(user)
+		check(err)
 		fmt.Println("Read from channel", tweets)
 		for _ = range tweets {
 			i++
 		}
 	} else if os.Args[1] == "simple" {
-		for _ = range simpleReader() {
+		tweets, err := simpleReader(user)
+		check(err)
+		for _ = range tweets {
 			i++
 		}
 	}

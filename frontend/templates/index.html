@@ -12,6 +12,10 @@
     <a href="{{ url_for('login') }}">Login by twitter</a>
 {% endif %}
 <br/><br/>
+{% if error %}
+    <b style="color:red">{{ error }}</b>
+{% endif %}
+
 {% if tweets %}
     {% for row in tweets %}
         <blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/{{ user }}/status/{{ row['tweet_id'] }}">__</a></blockquote>

@@ -30,7 +30,11 @@ def index():
     if session.get('twitter_user') and session.get('twitter_token'):
         data['user'] = session.get('twitter_user')
         res = requests.get('http://localhost:8080/tweets', params={'user': data['user']})
-        data['tweets'] = res.json()
+        result = res.json()
+        if result.get("status", "error") == "ok":
+            data['tweets'] = result['tweets']
+        else:
+            data['error'] = result.get('error', 'Error on request')
     else:
         data['user'] = None
 
