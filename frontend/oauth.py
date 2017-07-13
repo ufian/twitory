@@ -2,10 +2,8 @@
 
 __author__ = 'ufian'
 
-from flask import Flask, redirect, request, url_for, flash, session
-import requests
-import json
-import yaml
+from flask import redirect, request, url_for, flash, session
+import functools
 from flask_oauth import OAuth
 
 from app import app, config
@@ -20,8 +18,6 @@ twitter = oauth.remote_app('twitter',
     consumer_key=config['twitter']['consumer_key'],
     consumer_secret=config['twitter']['consumer_secret']
 )
-
-print config
 
 @twitter.tokengetter
 def get_twitter_token(token=None):
@@ -58,3 +54,12 @@ def logout():
     session.pop('twitter_token', None)
     flash('You were signed out')
     return redirect(request.referrer or url_for('index'))
+
+def require_oauth(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get('twitter_user') or not session.get('twitter_token'):
+            return redirect(url_for('login', next=request.url))
+
+        return fn(*args, **kwargs)
+    return wrapper

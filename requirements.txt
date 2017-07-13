@@ -1,4 +1,6 @@
 Flask==0.12.2
 Flask-OAuth==0.12
+Flask-WTF==0.14.2
 PyYAML==3.12
 requests==2.18.1
+wtforms==2.1

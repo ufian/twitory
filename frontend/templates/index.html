@@ -1,20 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Twitory</title>
-</head>
-<body>
-
-{% if user %}
-    <a href="{{ url_for('logout') }}">Logout {{ user }}</a>
-{% else %}
-    <a href="{{ url_for('login') }}">Login by twitter</a>
-{% endif %}
-<br/><br/>
-{% if error %}
-    <b style="color:red">{{ error }}</b>
-{% endif %}
+{% include "header.html" %}
 
 {% if tweets %}
     {% for row in tweets %}
@@ -24,5 +8,4 @@
     <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 {% endif %}
 
-</body>
-</html>
+{% include "footer.html" %}

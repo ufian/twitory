@@ -2,28 +2,24 @@
 
 __author__ = 'ufian'
 
-from flask import Flask, redirect, request, url_for, flash, session, render_template
+import os.path
 import requests
-import json
-import yaml
-from flask_oauth import OAuth
-from app import app, config
-from oauth import login, logout, oauth_authorized
 
-TEMPLATE = u'''<blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/gimlis/status/{id}">__</a></blockquote>'''
-SCRIPT = u'''<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>'''
+from flask import url_for, request, session, render_template
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import CombinedMultiDict
+
+
+from app import app, config
+from oauth import require_oauth
 
 app.secret_key = config['flask']['private']
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
-def link(endpoint, title):
-    return "<a href='{url}'>{title}</a>".format(
-        url=url_for(endpoint),
-        title=title
-    )
-
-@app.route('/')
+@app.route('/', endpoint="index")
 def index():
     data = dict()
     
@@ -39,3 +35,25 @@ def index():
         data['user'] = None
 
     return render_template('index.html', **data)
+
+
+class UploadForm(FlaskForm):
+    tweetsfile = FileField('tweets.csv', validators=[FileRequired()])
+
+@app.route('/upload', methods=['GET', 'POST'])
+@require_oauth
+def upload():
+    data = dict()
+    data['user'] = session.get('twitter_user')
+    
+    form = UploadForm(CombinedMultiDict((request.files, request.form)))
+
+    if form.validate_on_submit():
+        f = form.tweetsfile.data
+        filename = secure_filename(f.filename)
+        f.save(os.path.join(
+            config['twitory']['archive'], filename
+        ))
+        return render_template('upload_success.html', **data)
+
+    return render_template('upload.html', form=form, **data)

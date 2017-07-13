@@ -1,0 +1,12 @@
+{% include "header.html" %}
+
+{% from "_formhelpers.html" import render_field %}
+<form method="POST" enctype="multipart/form-data">
+  <dl>
+    {{ render_field(form.tweetsfile) }}
+  </dl>
+  {{ form.csrf_token }}
+  <p><input type=submit value=Register>
+</form>
+
+{% include "footer.html" %}
