@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
-	"errors"
+	"flag"
 	"github.com/gocarina/gocsv"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 /*
@@ -30,6 +33,12 @@ type DateTime struct {
 }
 
 const DateFormat = "2006-01-02 15:04:05 -0700"
+
+type Config struct {
+	Twitory struct {
+		Archive string `yaml:"archive"`
+	}
+}
 
 // Convert the internal date as CSV string
 func (date *DateTime) MarshalCSV() (string, error) {
@@ -166,33 +175,48 @@ func server() {
 }
 
 func main() {
-	if len(os.Args) == 1 {
+	config := flag.String("config", "config.yaml", "Path to config.yaml")
+	user := flag.String("user", "", "Test username for channel/simple")
+	fmt.Println(*config)
+	fmt.Println(*user)
+	flag.Parse()
+
+	cmd := "server"
+	fargs := flag.Args()
+	if len(fargs) >= 1 {
+		cmd = fargs[0]
+	}
+
+	config_file, err := ioutil.ReadFile(*config)
+	check(err)
+
+	cfg := Config{}
+	err = yaml.Unmarshal(config_file, &cfg)
+	check(err)
+
+	if cmd == "server" {
 		server()
 		os.Exit(0)
 	}
+
 	i := 0
-
-	if os.Args[1] == "server" {
-		server()
-		os.Exit(0)
-	}
-	user := ""
-	if len(os.Args) >= 3 {
-		user = os.Args[2]
-	}
-
-	if os.Args[1] == "channel" {
-		tweets, err := channelReader(user)
-		check(err)
-		fmt.Println("Read from channel", tweets)
-		for _ = range tweets {
-			i++
+	switch cmd {
+	case "channel":
+		{
+			tweets, err := channelReader(*user)
+			check(err)
+			fmt.Println("Read from channel", tweets)
+			for _ = range tweets {
+				i++
+			}
 		}
-	} else if os.Args[1] == "simple" {
-		tweets, err := simpleReader(user)
-		check(err)
-		for _ = range tweets {
-			i++
+	case "simple":
+		{
+			tweets, err := simpleReader(*user)
+			check(err)
+			for _ = range tweets {
+				i++
+			}
 		}
 	}
 

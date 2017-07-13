@@ -3,3 +3,6 @@ twitter:
   consumer_secret:
 flask:
   private: MyPrivateKey
+twitory:
+  archive: /path/to/archive/dir
+  backend: http://localhost:8080/tweets
