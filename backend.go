@@ -13,6 +13,7 @@ import (
 	"github.com/gocarina/gocsv"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"path/filepath"
 )
 
 /*
@@ -39,6 +40,8 @@ type Config struct {
 		Archive string `yaml:"archive"`
 	}
 }
+
+var appConfig = Config{}
 
 // Convert the internal date as CSV string
 func (date *DateTime) MarshalCSV() (string, error) {
@@ -88,12 +91,11 @@ func check(e error) {
 func getFileName(user string) (string, error) {
 	fpath := "%s.csv"
 
-	fmt.Printf("Read for \"%s\"", user)
 	if len(user) == 0 {
 		return fmt.Sprintf(fpath, "tweets"), nil
 	}
 
-	path := fmt.Sprintf(fpath, user)
+	path := filepath.Join(appConfig.Twitory.Archive, fmt.Sprintf(fpath, user))
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return "", errors.New("Not found tweets file")
@@ -177,8 +179,6 @@ func server() {
 func main() {
 	config := flag.String("config", "config.yaml", "Path to config.yaml")
 	user := flag.String("user", "", "Test username for channel/simple")
-	fmt.Println(*config)
-	fmt.Println(*user)
 	flag.Parse()
 
 	cmd := "server"
@@ -190,8 +190,7 @@ func main() {
 	config_file, err := ioutil.ReadFile(*config)
 	check(err)
 
-	cfg := Config{}
-	err = yaml.Unmarshal(config_file, &cfg)
+	err = yaml.Unmarshal(config_file, &appConfig)
 	check(err)
 
 	if cmd == "server" {
@@ -205,7 +204,6 @@ func main() {
 		{
 			tweets, err := channelReader(*user)
 			check(err)
-			fmt.Println("Read from channel", tweets)
 			for _ = range tweets {
 				i++
 			}
