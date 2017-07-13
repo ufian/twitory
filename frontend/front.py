@@ -52,7 +52,7 @@ def upload():
         f = form.tweetsfile.data
         filename = secure_filename(f.filename)
         f.save(os.path.join(
-            config['twitory']['archive'], filename
+            config['twitory']['archive'], '{0}.csv'.format(data['user'])
         ))
         return render_template('upload_success.html', **data)
 
