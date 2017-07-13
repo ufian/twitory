@@ -25,7 +25,7 @@ def index():
     
     if session.get('twitter_user') and session.get('twitter_token'):
         data['user'] = session.get('twitter_user')
-        res = requests.get('http://localhost:8080/tweets', params={'user': data['user']})
+        res = requests.get(config['twitory']['backend'], params={'user': data['user']})
         result = res.json()
         if result.get("status", "error") == "ok":
             data['tweets'] = result['tweets']
