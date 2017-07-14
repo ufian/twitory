@@ -1,18 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Twitory</title>
-</head>
-<body>
 
-{% if user %}
-    <a href="{{ url_for('logout') }}">Logout {{ user }}</a>
-    <a href="{{ url_for('upload') }}">Upload archive</a>
-{% else %}
-    <a href="{{ url_for('login') }}">Login by twitter</a>
-{% endif %}
-<br/><br/>
+    <link rel="stylesheet" href="/static/stylesheets/styles.css">
+    <link rel="stylesheet" href="/statitc/stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+  <body>
+      <div class="wrapper">
+        <header>
+          <h1>Minimal</h1>
+          <p>A Theme for GitHub Pages</p>
+          <p class="view">
+          {% if user %}
+              <li><a href="{{ url_for('logout') }}">Logout {{ user }}</a></li>
+              <li><a href="{{ url_for('upload') }}">Upload archive</a></li>
+          {% else %}
+              <li><a href="{{ url_for('login') }}">Login by twitter</a></li>
+          {% endif %}
+          </p>
+        </header>
+        <section>
+
 {% if error %}
-    <b style="color:red">{{ error }}</b>
+    <pre><code>{{ error }}</code></pre>
 {% endif %}
