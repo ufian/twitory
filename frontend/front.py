@@ -4,6 +4,7 @@ __author__ = 'ufian'
 
 import os.path
 import requests
+from collections import OrderedDict
 
 from flask import url_for, request, session, render_template
 from flask_wtf import FlaskForm
@@ -28,7 +29,19 @@ def index():
         res = requests.get(config['twitory']['backend'], params={'user': data['user']})
         result = res.json()
         if result.get("status", "error") == "ok":
-            data['tweets'] = result['tweets']
+            tweets = OrderedDict()
+            for tweet in result['tweets']:
+                key = tweet['timestamp'].split()[0]
+                if key not in tweets:
+                    tweets[key] = list()
+                tweets[key].append(tweet)
+                
+            data['header_links'] = OrderedDict()
+            
+            for key in tweets:
+                data['header_links']['#{0}'.format(key)] = key
+            
+            data['tweets'] = tweets
         else:
             data['error'] = result.get('error', 'Error on request')
     else:

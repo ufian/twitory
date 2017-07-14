@@ -20,11 +20,21 @@
           <h1>Twitory</h1>
           <p>Your twitter story</p>
           {% if user %}
-              <p><a href="{{ url_for('logout') }}">Logout {{ user }}</a></p>
-              <p><a href="{{ url_for('upload') }}">Upload archive</a></p>
+              <p><a href="{{ url_for('logout') }}">Logout {{ user }}</a><br />
+                 <a href="{{ url_for('upload') }}">Upload archive</a></p>
           {% else %}
               <p><a href="{{ url_for('login') }}">Login by twitter</a></p>
           {% endif %}
+
+          {% if header_links %}
+              <br/><br/>
+              <p>
+              {% for link, text in header_links.items() %}
+                  <a href="{{ link }}">{{ text }}</a><br/>
+              {% endfor %}
+              </p>
+          {% endif %}
+
         </header>
         <section>
 

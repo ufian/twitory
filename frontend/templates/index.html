@@ -1,8 +1,11 @@
 {% include "header.html" %}
 
 {% if tweets %}
-    {% for row in tweets %}
-        <blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/{{ user }}/status/{{ row['tweet_id'] }}">__</a></blockquote>
+    {% for day, day_tweets in tweets.items() %}
+        <h2 id="{{ day }}">{{ day }}</h2>
+        {%  for row in day_tweets %}
+            <blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/{{ user }}/status/{{ row['tweet_id'] }}">{{ row['text'] }}</a></blockquote>
+        {% endfor %}
     {% endfor %}
 
     <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
