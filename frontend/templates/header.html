@@ -17,15 +17,17 @@
   <body>
       <div class="wrapper">
         <header>
-          <h1>Minimal</h1>
-          <p>A Theme for GitHub Pages</p>
+          <h1>Twitory</h1>
+          <p>Your twitter story</p>
           <p class="view">
-          {% if user %}
-              <li><a href="{{ url_for('logout') }}">Logout {{ user }}</a></li>
-              <li><a href="{{ url_for('upload') }}">Upload archive</a></li>
-          {% else %}
-              <li><a href="{{ url_for('login') }}">Login by twitter</a></li>
-          {% endif %}
+            <ul>
+              {% if user %}
+                  <li><a href="{{ url_for('logout') }}">Logout {{ user }}</a></li>
+                  <li><a href="{{ url_for('upload') }}">Upload archive</a></li>
+              {% else %}
+                  <li><a href="{{ url_for('login') }}">Login by twitter</a></li>
+              {% endif %}
+            </ul>
           </p>
         </header>
         <section>
