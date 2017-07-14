@@ -1,0 +1,27 @@
+nginx:
+  image: nginx
+  volumes:
+   - /root/nginx/conf.d:/etc/nginx/conf.d
+   - /root/nginx/www:/var/www
+  links:
+  - twitoryfront:tf
+  ports:
+   - "80:80"
+twitoryback:
+  image: twitory/back
+  command: /go/bin/app -config=/app/config/config.yaml server
+  volumes:
+  - ./archive:/app/archive
+  - .:/app/config
+  ports:
+  - 8080:8080
+twitoryfront:
+  image: twitory/front
+  command: "gunicorn frontend.front:app -b 0.0.0.0:8000"
+  volumes:
+  - ./archive:/app/archive
+  - .:/app
+  links:
+  - twitoryback:tb
+  ports:
+  - 8000:8000
