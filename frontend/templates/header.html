@@ -20,7 +20,7 @@
           <h1>Twitory</h1>
           <p>Your twitter story</p>
           {% if user %}
-              <p><a href="{{ url_for('logout') }}">Logout {{ user }}</a><br />
+              <p><img src="/static/images/twilogo.png" style="height:.8em">{{ user }} <a href="{{ url_for('logout') }}">logout</a><br />
                  <a href="{{ url_for('upload') }}">Upload archive</a></p>
           {% else %}
               <p><a href="{{ url_for('login') }}">Login by twitter</a></p>
