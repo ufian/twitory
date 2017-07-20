@@ -2,7 +2,7 @@
 
 __author__ = 'ufian'
 
-from flask import Flask
+from flask import Flask, session
 import yaml
 
 app = Flask(__name__)
@@ -12,3 +12,7 @@ def load_config(path='config.yaml'):
         return yaml.load(f.read())
 
 config = load_config()
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
