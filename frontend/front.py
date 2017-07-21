@@ -5,6 +5,7 @@ __author__ = 'ufian'
 import os.path
 import requests
 from collections import OrderedDict
+from datetime import datetime
 
 from flask import url_for, request, session, render_template
 from flask_wtf import FlaskForm
@@ -19,6 +20,17 @@ from oauth import require_oauth
 app.secret_key = config['flask']['private']
 app.config['SESSION_TYPE'] = 'filesystem'
 
+
+def get_year_title(timestamp):
+    dt = datetime.strptime(timestamp[:-6], '%Y-%m-%d %H:%M:%S')
+    delta = datetime.now().year - dt.year
+    
+    if delta == 0:
+        return 'Today'
+    elif delta == 1:
+        return 'Year ago'
+    else:
+        return '{0} years ago'.format(delta)
 
 @app.route('/', endpoint="index")
 def index():
@@ -38,9 +50,9 @@ def index():
                 
             data['header_links'] = OrderedDict()
             
-            for key in tweets:
-                data['header_links']['#{0}'.format(key)] = key
-            
+            for key, key_tweets in tweets.items():
+                data['header_links']['#{0}'.format(key)] = get_year_title(key_tweets[0])
+
             data['tweets'] = tweets
         else:
             data['error'] = result.get('error', 'Error on request')
