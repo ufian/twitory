@@ -21,8 +21,9 @@ app.secret_key = config['flask']['private']
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
-def get_year_title(timestamp):
-    dt = datetime.strptime(timestamp[:-6], '%Y-%m-%d %H:%M:%S')
+def get_year_title(tweet):
+    timestamp = tweet['timestamp'][:-6]
+    dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
     delta = datetime.now().year - dt.year
     
     if delta == 0:
