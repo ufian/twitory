@@ -173,7 +173,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func server() {
 	http.HandleFunc("/tweets", handler)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":80", nil)
 }
 
 func main() {

@@ -12,8 +12,6 @@ services:
     volumes:
     - ./archive:/app/archive
     - .:/app/config
-    ports:
-    - 8080:8080
     networks:
       default: {}
       mynetwork:
@@ -21,12 +19,10 @@ services:
         - tb
   twitoryfront:
     image: twitory/front
-    command: "gunicorn frontend.front:app -b 0.0.0.0:8000"
+    command: "gunicorn frontend.front:app -b 0.0.0.0:80"
     volumes:
     - ./archive:/app/archive
     - .:/app
-    ports:
-    - 8000:8000
     networks:
       default: {}
       mynetwork:
