@@ -2,7 +2,7 @@
 
 {% if tweets %}
     {% for day, day_tweets in tweets.items() %}
-        <h2 id="{{ day }}">{{ day }}</h2>
+        <h2 id="{{ day }}">{{ tweet_years[day] }} ({{ day }})</h2>
         {%  for row in day_tweets %}
             <blockquote class="twitter-tweet" data-lang="en"><p lang="ru" dir="ltr"><a href="https://twitter.com/{{ user }}/status/{{ row['tweet_id'] }}">{{ row['text'] }}</a></blockquote>
         {% endfor %}
