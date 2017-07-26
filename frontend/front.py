@@ -54,7 +54,7 @@ def index():
             
             for key, key_tweets in tweets.items():
                 data['header_links']['#{0}'.format(key)] = get_year_title(key_tweets[0])
-                data['tweet_years'] = get_year_title(key_tweets[0])
+                data['tweet_years'][key] = get_year_title(key_tweets[0])
 
             data['tweets'] = tweets
         else:
