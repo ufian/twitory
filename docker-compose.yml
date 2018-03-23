@@ -8,6 +8,7 @@ networks:
 services:
   twitoryback:
     image: twitory/back
+    restart: always
     command: /go/bin/app -config=/app/config/config.yaml server
     volumes:
     - ./archive:/app/archive
@@ -19,6 +20,7 @@ services:
         - tb
   twitoryfront:
     image: twitory/front
+    restart: always
     command: "gunicorn frontend.front:app -b 0.0.0.0:80"
     volumes:
     - ./archive:/app/archive
